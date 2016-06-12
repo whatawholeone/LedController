@@ -13,16 +13,17 @@ int patternDelay = 50;
 int speedStep = 5;
 bool ledsOn = true;
 
+
 void setup() {
   Serial.begin(9600);
   //while (!Serial) {  ;  }
+  attachInterrupt(2, CHECK_IR, CHANGE);
   irrecv.enableIRIn(); // Start the receiver
   LEDS.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
   patternDelay = epRead();
 }
 
 void loop() {
-  readIR();
   if (ledsOn) {
     playPattern();
   }
@@ -82,8 +83,15 @@ void powerSwitch() {
   }
 }
 
+void CHECK_IR() {
+  while (irrecv.decode(&results)) {
+    Serial.println(results.value, HEX);
+    irrecv.resume();
+  }
+}
+
 void readIR() {
-  if (irrecv.decode(&results)) {
+  while (irrecv.decode(&results)) {
     Serial.println(results.value, HEX);
 
     switch (results.value) {
